@@ -6,12 +6,12 @@
 -spec all() -> [application_api].
 all() -> [application_api].
 
--spec application_api(sa_ct:config()) -> ok.
-application_api(_Config) ->
+-spec application_api(stash_ct:config()) -> ok.
+application_api(Config) ->
   false = is_app_running(),
-  ok = stash_app:start(),
+  _Config1 = stash_ct:start_application(Config),
   true = is_app_running(),
-  ok = stash_app:stop(),
+  ok = stash_ct:stop_application(),
   false = is_app_running(),
   ok.
 
