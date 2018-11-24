@@ -4,7 +4,7 @@
 
 %% API
 -export([start_link/0]).
--export([set/2, get/1, get/2, delete/1]).
+-export([set/2, set/3, get/1, get/2, delete/1]).
 
 %% genserver callbacks
 -export([init/1, handle_call/3, handle_info/2, handle_cast/2]).
@@ -27,7 +27,12 @@ start_link() ->
 
 -spec set(key(), value()) -> ok.
 set(Key, Value) ->
-  write(Key, Value).
+  set(Key, Value, 0).
+
+-spec set(key(), value(), non_neg_integer()) -> ok.
+set(Key, Value, Ttl) ->
+  Expiry = expire_at(Ttl),
+  write(Key, Value, Expiry).
 
 -spec get(key()) -> value().
 get(Key) ->
@@ -37,10 +42,11 @@ get(Key) ->
 get(Key, DefaultValue) ->
   Record = ets:lookup(?TABLE, Key),
 
-  case Record of
-    [] ->
+  case may_be_expired(Record) of
+    true ->
       DefaultValue;
-    [{Key, Value}] ->
+    false ->
+      [{Key, Value, Expiry}] = Record,
       Value
   end.
 
@@ -78,6 +84,18 @@ create_table() ->
       ?TABLE
   end.
 
-write(Key, Value) ->
-  true = ets:insert(?TABLE, {Key, Value}),
+write(Key, Value, Expiry) ->
+  true = ets:insert(?TABLE, {Key, Value, Expiry}),
   ok.
+
+may_be_expired([]) ->
+  true;
+may_be_expired([{_Key, _Value, 0}]) ->
+  false;
+may_be_expired([{_Key, _Value, Expiry}]) ->
+  Expiry < timestamp().
+
+expire_at(0) -> 0;
+expire_at(Ttl) -> timestamp() + (Ttl * 1000).
+
+timestamp() -> erlang:system_time(millisecond).
