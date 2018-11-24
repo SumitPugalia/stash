@@ -42,7 +42,6 @@ curd(_Config) ->
 
   ok = stash:delete(name),
   undefined = stash:get(name),
-
   ok.
 
 -spec ttl(stash_ct:config()) -> ok.
@@ -61,7 +60,6 @@ ttl(_Config) ->
   timer:sleep(1100),
   undefined = stash:get(city),
   "Sumit" = stash:get(name),
-
   ok.
 
 -spec gc(stash_ct:config()) -> ok.
@@ -89,7 +87,6 @@ gc(_Config) ->
 
   % expired entries removed
   true = validate_count(1),
-
   ok.
 
 % private

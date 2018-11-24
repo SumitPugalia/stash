@@ -4,7 +4,7 @@
 
 %% API
 -export([start_link/0]).
--export([set/2, set/3, write/1, get/1, get/2, delete/1, all/0]).
+-export([set/2, set/3, write/1, get/1, get/2, delete/1, all/0, remove/1]).
 
 %% genserver callbacks
 -export([init/1, handle_call/3, handle_info/2, handle_cast/2]).
@@ -27,6 +27,10 @@
 -spec(start_link() -> {ok, pid()} | ignore | {error, term()}).
 start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
+-spec all() -> [tuple()].
+all() ->
+  ets:tab2list(?TABLE).
 
 -spec set(key(), value()) -> ok.
 set(Key, Value) ->
@@ -65,12 +69,12 @@ get(Key, DefaultValue) ->
 
 -spec delete(key()) -> ok.
 delete(Key) ->
+  broadcast(stash, remove, [Key]).
+
+-spec remove(key()) -> ok.
+remove(Key) ->
   true = ets:delete(?TABLE, Key),
   ok.
-
--spec all() -> [tuple()].
-all() ->
-  ets:tab2list(?TABLE).
 
 -spec count() -> non_neg_integer().
 count() ->

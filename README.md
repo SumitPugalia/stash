@@ -1,4 +1,4 @@
-#Stash
+# Stash
 
 > ### Stash is a `distributed cache system` which can be used independently or as dependency for other projects.
 
@@ -26,17 +26,18 @@ Example
 -------
  ## Functionality
 ```
- stash:set(a, 1). 
+ stash:set(a, 1).  (If ttl is not passed it will never expire).
 ```
 ``` 
  stash:set(b, 2, 10). (Here 10 is ttl after which b will expire automatically).
 ```
 ```
- 1 = stash:get(a). 
+ 1 = stash:get(a). (Get the value of the key from the system).
 ```
 ``` 
  stash:delete(a). (Deletes the key from the system).
 ```
+ ## Distributed
 ```
  ## Node1 
 (stash@Sumit-Mac)1> stash:set(a, 1).
