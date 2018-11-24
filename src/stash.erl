@@ -4,13 +4,13 @@
 
 %% API
 -export([start_link/0]).
--export([set/2, set/3, write/1, get/1, get/2, delete/1]).
+-export([set/2, set/3, write/1, get/1, get/2, delete/1, all/0]).
 
 %% genserver callbacks
 -export([init/1, handle_call/3, handle_info/2, handle_cast/2]).
 
 %% test
--export([all/0, count/0, clear/0]).
+-export([count/0, clear/0]).
 
 -define(TABLE, ?MODULE).
 %%====================================================================

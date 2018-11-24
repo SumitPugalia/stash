@@ -10,12 +10,13 @@
   end_per_testcase/2
 ]).
 
--export([curd/1]).
+-export([curd/1, replicate/1]).
 
 -define(SLAVES, [node1, node2]).
+-define(SLAVE, [node3]).
 
 -spec all() -> [atom()].
-all() -> [curd].
+all() -> [curd, replicate].
 
 -spec init_per_suite(stash_ct:config()) -> stash_ct:config().
 init_per_suite(Config) ->
@@ -58,6 +59,39 @@ curd(Config) ->
   "Erlang" = stash:get(profile),
   "Erlang" = cmd(HNode1, stash, get, [profile]),
   "Erlang" = cmd(HNode2, stash, get, [profile]),
+
+  ok.
+
+-spec replicate(stash_ct:config()) -> ok.
+replicate(Config) ->
+  [HNode1, HNode2] = ?config(hostnodes, Config),
+
+  "Sumit" = stash:get(name),
+  "Sumit" = cmd(HNode1, stash, get, [name]),
+  "Sumit" = cmd(HNode2, stash, get, [name]),
+
+  ok = stash:set(city, "Dubai"),
+  ok = cmd(HNode1, stash, set, [profile, "Erlang"]),
+  ok = cmd(HNode2, stash, set, [fest, "Spawnfest"]),
+
+  [HNode3] = start_slaves(?SLAVE),
+
+  "Dubai" = stash:get(city),
+  "Dubai" = cmd(HNode1, stash, get, [city]),
+  "Dubai" = cmd(HNode2, stash, get, [city]),
+  "Dubai" = cmd(HNode3, stash, get, [city]),
+
+  "Erlang" = stash:get(profile),
+  "Erlang" = cmd(HNode1, stash, get, [profile]),
+  "Erlang" = cmd(HNode2, stash, get, [profile]),
+  "Erlang" = cmd(HNode3, stash, get, [profile]),
+
+  "Spawnfest" = stash:get(fest),
+  "Spawnfest" = cmd(HNode1, stash, get, [fest]),
+  "Spawnfest" = cmd(HNode2, stash, get, [fest]),
+  "Spawnfest" = cmd(HNode3, stash, get, [fest]),
+
+  _ = stop_slaves(?SLAVE),
 
   ok.
 
