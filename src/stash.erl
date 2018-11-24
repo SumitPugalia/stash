@@ -87,6 +87,7 @@ clear() ->
 
 init(_Args) ->
   ?TABLE = create_table(),
+  ok = replicate_data(),
   {ok, #{}}.
 
 handle_cast({write, Record}, State) ->
@@ -117,6 +118,21 @@ broadcast(Mod, Fun, Args) ->
   Nodes = [node() | nodes()],
   _ = rpc:multicall(Nodes, Mod, Fun, Args),
   ok.
+
+replicate_data() ->
+  Objects = get_objects(nodes()),
+  true = ets:insert(?TABLE, Objects),
+  ok.
+
+get_objects([]) ->
+  [];
+get_objects([Node | Nodes]) ->
+  case rpc:call(Node, stash, all, []) of
+    [] ->
+      get_objects(Nodes);
+    Records ->
+      Records
+  end.
 
 may_be_expired([]) ->
   true;

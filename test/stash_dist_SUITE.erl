@@ -43,6 +43,10 @@ end_per_testcase(_Case, _Config) ->
 curd(Config) ->
   [HNode1, HNode2] = ?config(hostnodes, Config),
 
+  "Sumit" = stash:get(name),
+  "Sumit" = cmd(HNode1, stash, get, [name]),
+  "Sumit" = cmd(HNode2, stash, get, [name]),
+
   ok = stash:set(city, "Dubai"),
 
   "Dubai" = stash:get(city),
