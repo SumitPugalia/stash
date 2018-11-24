@@ -53,9 +53,7 @@ get(Key) ->
 
 -spec get(key(), value()) -> value().
 get(Key, DefaultValue) ->
-  erlang:display("get"),
   Record = ets:lookup(?TABLE, Key),
-  erlang:display(Record),
 
   case may_be_expired(Record) of
     true ->

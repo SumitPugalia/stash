@@ -23,7 +23,7 @@ start_link() ->
 %%====================================================================
 
 init(_Args) ->
-  {ok, Interval} = application:get_env(stash, gc_interval),
+  Interval = application:get_env(stash, gc_interval, 15000),
   _ = erlang:send_after(Interval, ?MODULE, run_gc),
   {ok, #{gc_interval => Interval}}.
 
