@@ -10,13 +10,13 @@
   end_per_testcase/2
 ]).
 
--export([curd/1, replicate/1]).
+-export([curd/1, replicate/1, concurrency/1]).
 
 -define(SLAVES, [node1, node2]).
 -define(SLAVE, [node3]).
 
 -spec all() -> [atom()].
-all() -> [curd, replicate].
+all() -> [curd, replicate, concurrency].
 
 -spec init_per_suite(stash_ct:config()) -> stash_ct:config().
 init_per_suite(Config) ->
@@ -48,12 +48,14 @@ curd(Config) ->
   "Sumit" = cmd(HNode1, stash, get, [name]),
   "Sumit" = cmd(HNode2, stash, get, [name]),
 
+  undefined = stash:get(city),
   ok = stash:set(city, "Dubai"),
 
   "Dubai" = stash:get(city),
   "Dubai" = cmd(HNode1, stash, get, [city]),
   "Dubai" = cmd(HNode2, stash, get, [city]),
 
+  undefined = stash:get(profile),
   ok = cmd(HNode1, stash, set, [profile, "Erlang"]),
 
   "Erlang" = stash:get(profile),
@@ -70,6 +72,9 @@ replicate(Config) ->
   "Sumit" = cmd(HNode1, stash, get, [name]),
   "Sumit" = cmd(HNode2, stash, get, [name]),
 
+  undefined = stash:get(city),
+  undefined = stash:get(profile),
+  undefined = stash:get(fest),
   ok = stash:set(city, "Dubai"),
   ok = cmd(HNode1, stash, set, [profile, "Erlang"]),
   ok = cmd(HNode2, stash, set, [fest, "Spawnfest"]),
@@ -95,7 +100,37 @@ replicate(Config) ->
 
   ok.
 
-% private
+-spec concurrency(stash_ct:config()) -> ok.
+concurrency(Config) ->
+  [HNode1, HNode2] = ?config(hostnodes, Config),
+
+  undefined = stash:get(city),
+  undefined = stash:get(profile),
+  undefined = stash:get(fest),
+  _ = spawn(fun() -> stash:set(city, "Dubai") end),
+  _ = spawn(fun() -> cmd(HNode1, stash, set, [profile, "Erlang"]) end),
+  _ = spawn(fun() -> cmd(HNode2, stash, set, [fest, "Spawnfest"]) end),
+
+  timer:sleep(1000),
+
+  "Dubai" = stash:get(city),
+  "Dubai" = cmd(HNode1, stash, get, [city]),
+  "Dubai" = cmd(HNode2, stash, get, [city]),
+
+  "Erlang" = stash:get(profile),
+  "Erlang" = cmd(HNode1, stash, get, [profile]),
+  "Erlang" = cmd(HNode2, stash, get, [profile]),
+
+  "Spawnfest" = stash:get(fest),
+  "Spawnfest" = cmd(HNode1, stash, get, [fest]),
+  "Spawnfest" = cmd(HNode2, stash, get, [fest]),
+
+  ok.
+
+
+%%====================================================================
+%% Internal Functions
+%%====================================================================
 
 start_slaves(Slaves) ->
   start_slaves(Slaves, []).
