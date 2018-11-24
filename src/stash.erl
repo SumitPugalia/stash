@@ -9,6 +9,9 @@
 %% genserver callbacks
 -export([init/1, handle_call/3, handle_info/2, handle_cast/2]).
 
+%% test
+-export([all/0, count/0, clear/0]).
+
 -define(TABLE, ?MODULE).
 %%====================================================================
 %% Types
@@ -46,13 +49,26 @@ get(Key, DefaultValue) ->
     true ->
       DefaultValue;
     false ->
-      [{Key, Value, Expiry}] = Record,
+      [{Key, Value, _Expiry}] = Record,
       Value
   end.
 
 -spec delete(key()) -> ok.
 delete(Key) ->
   true = ets:delete(?TABLE, Key),
+  ok.
+
+-spec all() -> [tuple()].
+all() ->
+  ets:tab2list(?TABLE).
+
+-spec count() -> non_neg_integer().
+count() ->
+  length(all()).
+
+-spec clear() -> ok.
+clear() ->
+  true = ets:delete_all_objects(?TABLE),
   ok.
 
 %%====================================================================
@@ -93,9 +109,7 @@ may_be_expired([]) ->
 may_be_expired([{_Key, _Value, 0}]) ->
   false;
 may_be_expired([{_Key, _Value, Expiry}]) ->
-  Expiry < timestamp().
+  Expiry < time:timestamp().
 
 expire_at(0) -> 0;
-expire_at(Ttl) -> timestamp() + (Ttl * 1000).
-
-timestamp() -> erlang:system_time(millisecond).
+expire_at(Ttl) -> time:timestamp() + (Ttl * 1000).

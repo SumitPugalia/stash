@@ -31,13 +31,28 @@ start_link() ->
 %% Before OTP 18 tuples must be used to specify a child. e.g.
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-  Children = [#{
-    id => stash,
-    start => {stash, start_link, []},
-    restart => permanent
-  }],
+  Children = [
+    child_spec(stash),
+    child_spec(gc)
+  ],
+
   {ok, {{one_for_one, 5, 10}, Children}}.
 
 %%====================================================================
 %% Internal functions
 %%====================================================================
+
+%% private
+child_spec(Name) ->
+  child_spec(Name, #{}).
+
+%% private
+child_spec(Name, Opts) ->
+  maps:merge(
+    #{
+        id    => Name,
+        start => {Name, start_link, []},
+        restart => permanent
+    },
+    Opts
+  ).
