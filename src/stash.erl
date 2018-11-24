@@ -4,7 +4,7 @@
 
 %% API
 -export([start_link/0]).
--export([set/2, set/3, get/1, get/2, delete/1]).
+-export([set/2, set/3, write/1, get/1, get/2, delete/1]).
 
 %% genserver callbacks
 -export([init/1, handle_call/3, handle_info/2, handle_cast/2]).
@@ -35,7 +35,17 @@ set(Key, Value) ->
 -spec set(key(), value(), non_neg_integer()) -> ok.
 set(Key, Value, Ttl) ->
   Expiry = expire_at(Ttl),
-  write(Key, Value, Expiry).
+  broadcast(stash, write, [{Key, Value, Expiry}]).
+
+-spec write({key(), value(), non_neg_integer()}) -> ok.
+write(Record) ->
+  try
+    true = ets:insert(?TABLE, Record)
+  catch
+    error:badarg ->
+      ok = gen_server:cast(?MODULE, {write, Record})
+  end,
+  ok.
 
 -spec get(key()) -> value().
 get(Key) ->
@@ -43,7 +53,9 @@ get(Key) ->
 
 -spec get(key(), value()) -> value().
 get(Key, DefaultValue) ->
+  erlang:display("get"),
   Record = ets:lookup(?TABLE, Key),
+  erlang:display(Record),
 
   case may_be_expired(Record) of
     true ->
@@ -79,10 +91,13 @@ init(_Args) ->
   ?TABLE = create_table(),
   {ok, #{}}.
 
-handle_info(_Info, State) ->
+handle_cast({write, Record}, State) ->
+  true = ets:insert(?TABLE, Record),
+  {noreply, State};
+handle_cast(_Request, State) ->
   {noreply, State}.
 
-handle_cast(_Request, State) ->
+handle_info(_Info, State) ->
   {noreply, State}.
 
 handle_call(_Request, _From, State) ->
@@ -100,8 +115,9 @@ create_table() ->
       ?TABLE
   end.
 
-write(Key, Value, Expiry) ->
-  true = ets:insert(?TABLE, {Key, Value, Expiry}),
+broadcast(Mod, Fun, Args) ->
+  Nodes = [node() | nodes()],
+  _ = rpc:multicall(Nodes, Mod, Fun, Args),
   ok.
 
 may_be_expired([]) ->
