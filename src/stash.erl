@@ -76,6 +76,7 @@ remove(Key) ->
   true = ets:delete(?TABLE, Key),
   ok.
 
+%% Only for Test
 -spec count() -> non_neg_integer().
 count() ->
   length(all()).
@@ -123,6 +124,7 @@ broadcast(Mod, Fun, Args) ->
   _ = rpc:multicall(Nodes, Mod, Fun, Args),
   ok.
 
+%% Replication of Data
 replicate_data() ->
   Objects = get_objects(nodes()),
   true = ets:insert(?TABLE, Objects),
@@ -138,6 +140,7 @@ get_objects([Node | Nodes]) ->
       Records
   end.
 
+%% Expiration of Data
 may_be_expired([]) ->
   true;
 may_be_expired([{_Key, _Value, 0}]) ->

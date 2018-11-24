@@ -2,6 +2,7 @@
 
 > ### Stash is a `distributed cache system` which can be used independently or as dependency for other projects.
 
+[![Build Status](https://travis-ci.com/spawnfest/stash.svg?token=okHpxnXEEGaxWEb3oShA&branch=master)](https://travis-ci.com/spawnfest/stash)
 
 ## Summary
 

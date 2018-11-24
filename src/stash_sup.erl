@@ -42,11 +42,9 @@ init([]) ->
 %% Internal functions
 %%====================================================================
 
-%% private
 child_spec(Name) ->
   child_spec(Name, #{}).
 
-%% private
 child_spec(Name, Opts) ->
   maps:merge(
     #{
