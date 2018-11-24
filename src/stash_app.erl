@@ -30,6 +30,8 @@ stop() ->
 %% Application Callback
 %%====================================================================
 start(_StartType, _StartArgs) ->
+  Nodes = application:get_env(stash, nodes, []),
+  ok = lists:foreach(fun net_adm:ping/1, Nodes),
   stash_sup:start_link().
 
 stop(_State) ->
