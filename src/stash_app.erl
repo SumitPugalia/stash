@@ -19,12 +19,12 @@
 
 -spec start() -> ok.
 start() ->
-	{ok, _} = application:ensure_all_started(stash),
-	ok.
+  {ok, _} = application:ensure_all_started(stash),
+  ok.
 
 -spec stop() -> ok.
 stop() ->
-	application:stop(stash).
+  application:stop(stash).
 
 %%====================================================================
 %% Application Callback

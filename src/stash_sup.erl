@@ -31,11 +31,11 @@ start_link() ->
 %% Before OTP 18 tuples must be used to specify a child. e.g.
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-	Children = [#{
-		id => stash,
-		start => {stash, start_link, []},
-		restart => permanent
-	}],
+  Children = [#{
+    id => stash,
+    start => {stash, start_link, []},
+    restart => permanent
+  }],
   {ok, {{one_for_one, 5, 10}, Children}}.
 
 %%====================================================================
