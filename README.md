@@ -27,16 +27,16 @@ Example
 -------
  ## Functionality
 ```
- stash:set(a, 1).  (If ttl is not passed it will never expire).
+ stash:set(b, 2, 10). (set/update, here 10 is ttl so after 10 sec `b` will expire automatically).
 ```
 ``` 
- stash:set(b, 2, 10). (Here 10 is ttl after which b will expire automatically).
+ stash:set(a, 1).  (set/update, if ttl is not passed it will never expire).
 ```
 ```
- 1 = stash:get(a). (Get the value of the key from the system).
+ 1 = stash:get(a). (get the value of the `a` from the system).
 ```
 ``` 
- stash:delete(a). (Deletes the key from the system).
+ stash:delete(a). (deletes `a` from the system).
 ```
  ## Distributed
 ```
